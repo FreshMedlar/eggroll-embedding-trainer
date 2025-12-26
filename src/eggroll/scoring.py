@@ -111,7 +111,8 @@ class ChunkedScorer(VectorizedScorer):
         q_base, d_base, scores_base = self.compute_base_scores(H_q, H_d, W)
         
         M = A.shape[0]
-        all_scores = []
+        all_pos = []
+        all_neg = []
         
         for start in range(0, M, self.chunk_size):
             end = min(start + self.chunk_size, M)
@@ -119,6 +120,9 @@ class ChunkedScorer(VectorizedScorer):
                 H_q, H_d, q_base, d_base, scores_base,
                 A[start:end], B[start:end]
             )
-            all_scores.append(scores_chunk)
+            # compute_perturbed_scores_rank1 returns [pos_chunk, neg_chunk]
+            chunk_m = end - start
+            all_pos.append(scores_chunk[..., :chunk_m])
+            all_neg.append(scores_chunk[..., chunk_m:])
             
-        return torch.cat(all_scores, dim=-1)
+        return torch.cat(all_pos + all_neg, dim=-1)
