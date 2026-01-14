@@ -1,0 +1,3 @@
+[console_scripts]
+eggroll-cache = scripts.prepare_cache:main
+eggroll-train = src.train:main
